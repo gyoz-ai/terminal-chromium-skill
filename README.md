@@ -6,15 +6,7 @@ Built on [carbonyl](https://github.com/fathyb/carbonyl), which renders Chromium 
 
 ## Demo
 
-<table>
-  <tbody>
-    <tr>
-      <td>
-        <video src="https://github.com/gyoz-ai/terminal-chromium-skill/raw/main/demo.mp4">
-      </td>
-    </tr>
-  </tbody>
-</table>
+https://github.com/user-attachments/assets/47408250-60b1-4fd9-87fe-46723d045b9a
 
 ## What it does
 
