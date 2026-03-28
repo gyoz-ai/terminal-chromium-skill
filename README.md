@@ -1,6 +1,6 @@
-# terminal-chromium (Claude Code Skill)
+# terminal-chromium (Claude Code Plugin)
 
-A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that gives Claude a full Chromium browser in your terminal. Browse, inspect, and interact with web pages using CDP (Chrome DevTools Protocol) -- all from within a Claude Code session.
+A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) plugin that gives Claude a full Chromium browser in your terminal. Browse, inspect, and interact with web pages using CDP (Chrome DevTools Protocol) -- all from within a Claude Code session.
 
 Built on [carbonyl](https://github.com/fathyb/carbonyl), which renders Chromium using unicode half-block characters. Works in any terminal, including tmux and over SSH.
 
@@ -52,19 +52,41 @@ Claude: [runs eval to extract titles]
 
 ## Installation
 
-```bash
-# Copy skill files
-mkdir -p ~/.claude/skills/terminal-chromium
-cp skills/terminal-chromium/SKILL.md ~/.claude/skills/terminal-chromium/
-cp skills/terminal-chromium/cdp.mjs ~/.claude/skills/terminal-chromium/
-chmod +x ~/.claude/skills/terminal-chromium/cdp.mjs
+### Option 1: Plugin Directory (recommended)
+
+Install directly from the Claude Code plugin directory:
+
+```
+/plugins
 ```
 
-Or symlink to stay updated:
+Search for **terminal-chromium** and install it.
+
+### Option 2: Install plugin from GitHub
+
+```bash
+# In any Claude Code session:
+/install-plugin https://github.com/gyoz-ai/terminal-chromium-skill
+```
+
+### Option 3: Manual install
+
+Clone and symlink the skill:
 
 ```bash
 git clone https://github.com/gyoz-ai/terminal-chromium-skill.git ~/terminal-chromium-skill
 ln -s ~/terminal-chromium-skill/skills/terminal-chromium ~/.claude/skills/terminal-chromium
+```
+
+Or copy directly:
+
+```bash
+mkdir -p ~/.claude/skills/terminal-chromium
+curl -o ~/.claude/skills/terminal-chromium/SKILL.md \
+  https://raw.githubusercontent.com/gyoz-ai/terminal-chromium-skill/main/skills/terminal-chromium/SKILL.md
+curl -o ~/.claude/skills/terminal-chromium/cdp.mjs \
+  https://raw.githubusercontent.com/gyoz-ai/terminal-chromium-skill/main/skills/terminal-chromium/cdp.mjs
+chmod +x ~/.claude/skills/terminal-chromium/cdp.mjs
 ```
 
 The skill automatically checks for `tmux`, `carbonyl`, and `Node.js 21+` at runtime and will guide you through installing anything missing.
@@ -103,13 +125,26 @@ Claude handles the browser launch, CDP interaction, and pane management automati
 - **cdp.mjs** connects via WebSocket to the CDP endpoint to control the browser
 - Multiple browser instances can run on different ports (9222, 9223, ...)
 
+## Plugin structure
+
+```
+terminal-chromium-skill/
+├── .claude-plugin/
+│   └── plugin.json
+├── skills/
+│   └── terminal-chromium/
+│       ├── SKILL.md
+│       └── cdp.mjs
+├── LICENSE
+└── README.md
+```
+
 ## Notes
 
 - Renders at 60 FPS with 0% idle CPU
 - Supports WebGL, WebGPU, audio, and video
 - Works over SSH
 - Heavy JS sites (YouTube, Twitter) may crash carbonyl -- simpler pages work best
-- Terminal shaders (CRT, bloom, etc.) can reduce contrast of the browser rendering
 - Node.js 21+ required for built-in `WebSocket` (no npm dependencies needed)
 
 ## Credits

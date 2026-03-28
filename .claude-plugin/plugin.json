@@ -1,0 +1,11 @@
+{
+  "name": "terminal-chromium",
+  "version": "1.0.0",
+  "description": "Full Chromium browser in your terminal via CDP, rendered with unicode half-block characters",
+  "author": {
+    "name": "gyoz-ai",
+    "url": "https://github.com/gyoz-ai"
+  },
+  "repository": "https://github.com/gyoz-ai/terminal-chromium-skill",
+  "license": "MIT"
+}
