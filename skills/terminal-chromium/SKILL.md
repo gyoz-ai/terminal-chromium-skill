@@ -58,24 +58,49 @@ echo "carbonyl installed: $($INSTALL_DIR/carbonyl --version)"
 
 ## Launch browser (when /terminal-chromium is invoked)
 
-When this skill is invoked, follow these steps to open the browser:
+When this skill is invoked, run through these prerequisite checks first, then launch.
 
-### Step 1: Ensure tmux
+### Step 1: Check prerequisites
 
-Check `$TMUX` env var. If empty (not in tmux), tell the user:
-
-"Relaunching inside tmux so the browser can split next to us. Run `/exit`, then `tmux new-session "claude --resume"`"
-
-Claude will resume this same conversation inside tmux. Then the user re-invokes `/terminal-chromium`.
-
-### Step 2: Check carbonyl is installed
+Run all checks in a single bash command:
 
 ```bash
-CARBONYL="$HOME/.local/share/terminal-chromium/carbonyl"
-if [ ! -x "$CARBONYL" ]; then
-  echo "carbonyl not installed. Run the first-time setup above."
-  exit 1
-fi
+echo "=== Prerequisite Check ===" && \
+echo -n "tmux: " && (command -v tmux >/dev/null 2>&1 && echo "OK" || echo "MISSING") && \
+echo -n "carbonyl: " && (test -x "$HOME/.local/share/terminal-chromium/carbonyl" && echo "OK" || echo "MISSING") && \
+echo -n "node: " && (node -v 2>/dev/null || echo "MISSING") && \
+echo -n "tmux session: " && ([ -n "$TMUX" ] && echo "OK" || echo "NOT IN TMUX")
+```
+
+**If tmux is MISSING**: Tell the user to install it (`brew install tmux` on macOS, `apt install tmux` on Linux).
+
+**If carbonyl is MISSING**: Run the first-time setup section above to install it automatically.
+
+**If NOT IN TMUX**: Tell the user: "The browser needs tmux to open in a split pane. Run `/exit`, then `tmux new-session "claude --resume"` to relaunch inside tmux."
+
+**If all OK**: Continue to Step 2.
+
+### Step 2: Ensure tmux config
+
+Check and apply required tmux settings for carbonyl:
+
+```bash
+# Apply settings for this session (idempotent)
+tmux set -g mouse on 2>/dev/null
+tmux set -g allow-passthrough all 2>/dev/null
+tmux set -g extended-keys on 2>/dev/null
+echo "tmux settings applied (mouse, passthrough, extended-keys)"
+```
+
+Also check if `~/.tmux.conf` has these settings persisted. If not, append them:
+
+```bash
+TMUX_CONF="$HOME/.tmux.conf"
+touch "$TMUX_CONF"
+grep -q "set -g mouse on" "$TMUX_CONF" || echo -e "\n# terminal-chromium settings\nset -g mouse on" >> "$TMUX_CONF"
+grep -q "allow-passthrough" "$TMUX_CONF" || echo "set -g allow-passthrough all" >> "$TMUX_CONF"
+grep -q "extended-keys" "$TMUX_CONF" || echo "set -g extended-keys on" >> "$TMUX_CONF"
+echo "tmux.conf updated"
 ```
 
 ### Step 3: Launch browser
