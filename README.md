@@ -4,6 +4,10 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that gives
 
 Built on [carbonyl](https://github.com/fathyb/carbonyl), which renders Chromium using unicode half-block characters. Works in any terminal, including tmux and over SSH.
 
+## Demo
+
+https://github.com/gyoz-ai/terminal-chromium-skill/raw/main/demo.mp4
+
 ## What it does
 
 When you invoke `/terminal-chromium`, Claude will:
