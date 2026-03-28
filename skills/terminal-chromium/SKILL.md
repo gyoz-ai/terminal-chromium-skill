@@ -61,28 +61,62 @@ fi
 
 ### Step 2: Ensure tmux config
 
-Check and apply required tmux settings for carbonyl:
-
-```bash
-# Apply settings for this session (idempotent)
-tmux set -g mouse on 2>/dev/null
-tmux set -g allow-passthrough all 2>/dev/null
-tmux set -g extended-keys on 2>/dev/null
-echo "tmux settings applied (mouse, passthrough, extended-keys)"
-```
-
-Also check if `~/.tmux.conf` has these settings persisted. If not, append them:
+Check if tmux settings are already configured. Only apply what's missing:
 
 ```bash
 TMUX_CONF="$HOME/.tmux.conf"
-touch "$TMUX_CONF"
-grep -q "set -g mouse on" "$TMUX_CONF" || echo -e "\n# terminal-chromium settings\nset -g mouse on" >> "$TMUX_CONF"
-grep -q "allow-passthrough" "$TMUX_CONF" || echo "set -g allow-passthrough all" >> "$TMUX_CONF"
-grep -q "extended-keys" "$TMUX_CONF" || echo "set -g extended-keys on" >> "$TMUX_CONF"
-echo "tmux.conf updated"
+NEEDS_SETUP=0
+
+# Check ~/.tmux.conf for all required settings
+if [ -f "$TMUX_CONF" ]; then
+  grep -q "set -g mouse on" "$TMUX_CONF" || NEEDS_SETUP=1
+  grep -q "allow-passthrough" "$TMUX_CONF" || NEEDS_SETUP=1
+  grep -q "extended-keys" "$TMUX_CONF" || NEEDS_SETUP=1
+else
+  NEEDS_SETUP=1
+fi
+
+if [ "$NEEDS_SETUP" -eq 1 ]; then
+  touch "$TMUX_CONF"
+  grep -q "set -g mouse on" "$TMUX_CONF" || echo -e "\n# terminal-chromium settings\nset -g mouse on" >> "$TMUX_CONF"
+  grep -q "allow-passthrough" "$TMUX_CONF" || echo "set -g allow-passthrough all" >> "$TMUX_CONF"
+  grep -q "extended-keys" "$TMUX_CONF" || echo "set -g extended-keys on" >> "$TMUX_CONF"
+  tmux set -g mouse on 2>/dev/null
+  tmux set -g allow-passthrough all 2>/dev/null
+  tmux set -g extended-keys on 2>/dev/null
+  echo "tmux config applied"
+else
+  echo "tmux config already set, skipping"
+fi
 ```
 
-### Step 3: Launch browser
+### Step 3: Check for existing carbonyl instance
+
+Before launching a new browser, check if carbonyl is already running with an active CDP port:
+
+```bash
+# Scan ports 9222-9230 for an active CDP endpoint
+EXISTING_PORT=""
+for p in $(seq 9222 9230); do
+  if curl -s "http://127.0.0.1:$p/json/version" >/dev/null 2>&1; then
+    EXISTING_PORT=$p
+    break
+  fi
+done
+
+if [ -n "$EXISTING_PORT" ]; then
+  echo "EXISTING_INSTANCE_FOUND on port $EXISTING_PORT"
+  CDP_PORT=$EXISTING_PORT ~/.claude/skills/terminal-chromium/cdp.mjs list
+else
+  echo "NO_EXISTING_INSTANCE"
+fi
+```
+
+**If EXISTING_INSTANCE_FOUND**: Skip launching a new browser. Use the existing CDP port for all subsequent commands. Continue to Step 5 (Use CDP).
+
+**If NO_EXISTING_INSTANCE**: Continue to Step 4 to launch a new browser.
+
+### Step 4: Launch browser
 
 ```bash
 # Find available CDP port
@@ -102,7 +136,7 @@ sleep 3
 curl -s "http://127.0.0.1:$PORT/json/version" | head -3
 ```
 
-### Step 4: Use CDP
+### Step 5: Use CDP
 
 After launch, use the CDP commands below to interact with the browser programmatically.
 
