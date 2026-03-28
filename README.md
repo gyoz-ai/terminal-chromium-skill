@@ -48,45 +48,6 @@ Claude: [runs eval to extract titles]
 
 ## Installation
 
-### Prerequisites
-
-- **tmux** -- the browser runs in a split pane
-- **Node.js 21+** -- for the CDP client (uses built-in WebSocket)
-- **carbonyl** -- the terminal Chromium renderer
-
-### Step 1: Install carbonyl
-
-```bash
-ARCH=$(uname -m)
-OS=$(uname -s)
-case "$OS" in
-  Darwin) PLATFORM_OS="macos" ;;
-  Linux)  PLATFORM_OS="linux" ;;
-esac
-case "$ARCH" in
-  arm64|aarch64) PLATFORM_ARCH="arm64" ;;
-  x86_64)        PLATFORM_ARCH="amd64" ;;
-esac
-PLATFORM="${PLATFORM_OS}-${PLATFORM_ARCH}"
-
-INSTALL_DIR="$HOME/.local/share/terminal-chromium"
-mkdir -p "$INSTALL_DIR"
-curl -fSL "https://github.com/gyoz-ai/terminal-chromium/releases/latest/download/carbonyl.${PLATFORM}.zip" \
-  -o /tmp/carbonyl.zip
-unzip -o /tmp/carbonyl.zip -d "$INSTALL_DIR"
-if [ -d "$INSTALL_DIR/carbonyl-"* ]; then
-  mv "$INSTALL_DIR"/carbonyl-*/* "$INSTALL_DIR/"
-  rmdir "$INSTALL_DIR"/carbonyl-*/
-fi
-rm /tmp/carbonyl.zip
-chmod +x "$INSTALL_DIR/carbonyl"
-
-# Add to PATH
-echo 'export PATH="$HOME/.local/share/terminal-chromium:$PATH"' >> ~/.zshrc
-```
-
-### Step 2: Install the skill
-
 ```bash
 # Copy skill files
 mkdir -p ~/.claude/skills/terminal-chromium
@@ -102,18 +63,7 @@ git clone https://github.com/gyoz-ai/terminal-chromium-skill.git ~/terminal-chro
 ln -s ~/terminal-chromium-skill/skills/terminal-chromium ~/.claude/skills/terminal-chromium
 ```
 
-### Step 3: tmux setup (recommended)
-
-Add to your `~/.tmux.conf`:
-
-```bash
-# Enable mouse so you can click between browser and Claude panes
-set -g mouse on
-
-# Carbonyl rendering support
-set -g allow-passthrough all
-set -g extended-keys on
-```
+The skill automatically checks for `tmux`, `carbonyl`, and `Node.js 21+` at runtime and will guide you through installing anything missing.
 
 ## Usage
 
