@@ -10,7 +10,7 @@ Built on [carbonyl](https://github.com/fathyb/carbonyl), which renders Chromium 
   <tbody>
     <tr>
       <td>
-        <video src="https://user-images.githubusercontent.com/5746414/213682926-f1cc2de7-a38c-4125-9257-92faecfc7e24.mp4">
+        <video src="https://github.com/gyoz-ai/terminal-chromium-skill/raw/main/demo.mp4">
       </td>
     </tr>
   </tbody>
