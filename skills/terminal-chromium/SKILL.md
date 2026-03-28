@@ -14,48 +14,6 @@ A full Chromium browser that renders natively in your terminal. Uses CDP (Chrome
 - The `cdp.mjs` script connects to this endpoint to control the browser
 - Multiple instances can run on different ports (9222, 9223, 9224, ...)
 
-## First-time setup
-
-Install carbonyl from the gyoz-ai fork's pre-built binaries:
-
-```bash
-# Detect platform (carbonyl uses "macos" not "darwin")
-ARCH=$(uname -m)
-OS=$(uname -s)
-case "$OS" in
-  Darwin) PLATFORM_OS="macos" ;;
-  Linux)  PLATFORM_OS="linux" ;;
-  *)      echo "Unsupported OS: $OS"; exit 1 ;;
-esac
-case "$ARCH" in
-  arm64|aarch64) PLATFORM_ARCH="arm64" ;;
-  x86_64)        PLATFORM_ARCH="amd64" ;;
-  *)             echo "Unsupported arch: $ARCH"; exit 1 ;;
-esac
-PLATFORM="${PLATFORM_OS}-${PLATFORM_ARCH}"
-
-# Download and install
-INSTALL_DIR="$HOME/.local/share/terminal-chromium"
-mkdir -p "$INSTALL_DIR"
-curl -fSL "https://github.com/gyoz-ai/terminal-chromium/releases/latest/download/carbonyl.${PLATFORM}.zip" -o /tmp/carbonyl.zip
-unzip -o /tmp/carbonyl.zip -d "$INSTALL_DIR"
-# The zip extracts into a subdirectory — move files up
-if [ -d "$INSTALL_DIR/carbonyl-"* ]; then
-  mv "$INSTALL_DIR"/carbonyl-*/* "$INSTALL_DIR/"
-  rmdir "$INSTALL_DIR"/carbonyl-*/
-fi
-rm /tmp/carbonyl.zip
-chmod +x "$INSTALL_DIR/carbonyl"
-
-# Add to PATH if not already
-if ! echo "$PATH" | grep -q "terminal-chromium"; then
-  echo 'export PATH="$HOME/.local/share/terminal-chromium:$PATH"' >> ~/.zshrc
-  export PATH="$HOME/.local/share/terminal-chromium:$PATH"
-fi
-
-echo "carbonyl installed: $($INSTALL_DIR/carbonyl --version)"
-```
-
 ## Launch browser (when /terminal-chromium is invoked)
 
 When this skill is invoked, run through these prerequisite checks first, then launch.
@@ -72,11 +30,32 @@ echo -n "node: " && (node -v 2>/dev/null || echo "MISSING") && \
 echo -n "tmux session: " && ([ -n "$TMUX" ] && echo "OK" || echo "NOT IN TMUX")
 ```
 
-**If tmux is MISSING**: Tell the user to install it (`brew install tmux` on macOS, `apt install tmux` on Linux).
+**If tmux is MISSING**: Tell the user to install it (`brew install tmux` on macOS, `apt install tmux` on Linux). Stop here.
 
-**If carbonyl is MISSING**: Run the first-time setup section above to install it automatically.
+**If carbonyl is MISSING**: Install it automatically by running:
 
-**If NOT IN TMUX**: Tell the user: "The browser needs tmux to open in a split pane. Run `/exit`, then `tmux new-session "claude --resume"` to relaunch inside tmux."
+```bash
+ARCH=$(uname -m); OS=$(uname -s)
+case "$OS" in Darwin) P_OS="macos";; Linux) P_OS="linux";; esac
+case "$ARCH" in arm64|aarch64) P_ARCH="arm64";; x86_64) P_ARCH="amd64";; esac
+INSTALL_DIR="$HOME/.local/share/terminal-chromium"
+mkdir -p "$INSTALL_DIR"
+curl -fSL "https://github.com/gyoz-ai/terminal-chromium/releases/latest/download/carbonyl.${P_OS}-${P_ARCH}.zip" -o /tmp/carbonyl.zip
+unzip -o /tmp/carbonyl.zip -d "$INSTALL_DIR"
+if [ -d "$INSTALL_DIR/carbonyl-"* ]; then mv "$INSTALL_DIR"/carbonyl-*/* "$INSTALL_DIR/"; rmdir "$INSTALL_DIR"/carbonyl-*/; fi
+rm /tmp/carbonyl.zip && chmod +x "$INSTALL_DIR/carbonyl"
+echo "$INSTALL_DIR/carbonyl installed"
+```
+
+Then add to PATH if needed:
+```bash
+if ! echo "$PATH" | grep -q "terminal-chromium"; then
+  echo 'export PATH="$HOME/.local/share/terminal-chromium:$PATH"' >> ~/.zshrc
+  export PATH="$HOME/.local/share/terminal-chromium:$PATH"
+fi
+```
+
+**If NOT IN TMUX**: Tell the user: "The browser needs tmux to open in a split pane. Run `/exit`, then `tmux new-session "claude --resume"` to relaunch inside tmux." Stop here.
 
 **If all OK**: Continue to Step 2.
 
